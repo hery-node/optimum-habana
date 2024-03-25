@@ -4,7 +4,7 @@ DEEPSPEED_HPU_ZERO3_SYNC_MARK_STEP_REQUIRED=1 LOWER_LIST=ops_bf16.txt python3 ..
     --dataset_name timdettmers/openassistant-guanaco \
     --bf16 True \
     --output_dir ./model_lora_falcon_ddp \
-    --num_train_epochs 3 \
+    --max_train_samples 500 \
     --per_device_train_batch_size 1 \
     --per_device_eval_batch_size 1 \
     --gradient_accumulation_steps 16 \
