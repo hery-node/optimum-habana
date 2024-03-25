@@ -1,6 +1,6 @@
 DEEPSPEED_HPU_ZERO3_SYNC_MARK_STEP_REQUIRED=1 LOWER_LIST=ops_bf16.txt python3 ../gaudi_spawn.py \
     --world_size 8 --use_deepspeed run_lora_clm.py \
-    --model_name_or_path tiiuae/falcon-180B \
+    --model_name_or_path tiiuae/falcon-180B $PARAM\
     --dataset_name timdettmers/openassistant-guanaco \
     --bf16 True \
     --output_dir ./model_lora_falcon_ddp \
