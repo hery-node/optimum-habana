@@ -43,7 +43,7 @@ from transformers.trainer_utils import is_main_process
 
 from optimum.habana import GaudiConfig, GaudiTrainer, GaudiTrainingArguments
 from optimum.habana.utils import set_seed
-
+from perflog import CharmerCallback
 
 try:
     from optimum.habana.utils import check_optimum_habana_min_version
@@ -615,7 +615,7 @@ def main():
             for column in dataset.features:
                 concatenated_data = [item for sample in dataset[column] for item in sample]
                 reshaped_data = [
-                    concatenated_data[i * max_seq_length : (i + 1) * max_seq_length]
+                    concatenated_data[i * max_seq_length: (i + 1) * max_seq_length]
                     for i in range(len(concatenated_data) // max_seq_length)
                 ]
                 concatenated_dataset[column] = reshaped_data
@@ -696,6 +696,7 @@ def main():
         gaudi_config.use_fused_adam = True
         gaudi_config.use_fused_clip_norm = True
 
+        callback = CharmerCallback()
         # Initialize our Trainer
         trainer = GaudiTrainer(
             model=lora_model,
@@ -708,6 +709,7 @@ def main():
             compute_metrics=compute_metrics if training_args.do_eval else None,
             preprocess_logits_for_metrics=preprocess_logits_for_metrics if training_args.do_eval else None,
         )
+        trainer.add_callback(callback)
 
         # Solution for https://github.com/huggingface/peft/blob/v0.6.2/README.md#caveats (1)
         if training_args.fsdp and training_args.fsdp_config["auto_wrap_policy"] == "TRANSFORMER_BASED_WRAP":
@@ -721,6 +723,7 @@ def main():
         metrics = train_result.metrics
         trainer.log_metrics("train", metrics)
         trainer.save_metrics("train", metrics)
+        callback.write_to_disk()
 
         # Evaluation
     if training_args.do_eval:
